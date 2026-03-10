@@ -12,15 +12,12 @@ stages:
     deps:
       - src/train.py
       - data/processed/train.csv
-    params:
-      - models
+      - data/processed/test.csv
     outs:
-      - models/        # Track the whole folder now
-    metrics:
-      - metrics.json:
-          cache: false
+      - models/model.pkl
   tune:
     cmd: python src/tune.py
     deps:
       - src/tune.py
       - data/processed/train.csv
+      - data/processed/test.csv
