@@ -1,8 +1,0 @@
-{
-    "logistic": {
-        "accuracy": 0.7703583061889251
-    },
-    "random_forest": {
-        "accuracy": 1.0
-    }
-}
