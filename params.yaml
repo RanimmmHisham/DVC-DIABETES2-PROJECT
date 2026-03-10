@@ -1,0 +1,3 @@
+models:
+  - "logistic"
+  - "random_forest"

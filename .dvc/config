@@ -1,0 +1,4 @@
+[core]
+    remote = origin
+['remote "origin"']
+    url = https://dagshub.com/RanimmmHisham/DVC-DIABETES2-PROJECT.dvc

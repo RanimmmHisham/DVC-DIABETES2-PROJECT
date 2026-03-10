@@ -1,0 +1,54 @@
+schema: '2.0'
+stages:
+  preprocess:
+    cmd: python src/preprocess.py
+    deps:
+    - path: data/raw/diabetes.csv
+      hash: md5
+      md5: 4b890313fe22f1f5629382ab7a06dd07
+      size: 23375
+    - path: src/preprocess.py
+      hash: md5
+      md5: 96c9d91f3ace810c64f6f3d16f0c3261
+      size: 413
+    outs:
+    - path: data/processed/test.csv
+      hash: md5
+      md5: 0ae68e0c1e7e08024e93e5ffcc87bfbf
+      size: 4873
+    - path: data/processed/train.csv
+      hash: md5
+      md5: 41288c9b48d586ac06a6de4eb3e16d98
+      size: 19284
+  train:
+    cmd: python src/train.py
+    deps:
+    - path: data/processed/train.csv
+      hash: md5
+      md5: 41288c9b48d586ac06a6de4eb3e16d98
+      size: 19284
+    - path: src/train.py
+      hash: md5
+      md5: 9d7a4bb62ea70a906b619139e8288434
+      size: 1168
+    params:
+      params.yaml:
+        models:
+        - logistic
+        - random_forest
+    outs:
+    - path: models/model.pkl
+      hash: md5
+      md5: e1ea774f3cd47f8aa4c5f6f8776080f2
+      size: 1707065
+  tune:
+    cmd: python src/tune.py
+    deps:
+    - path: data/processed/train.csv
+      hash: md5
+      md5: 41288c9b48d586ac06a6de4eb3e16d98
+      size: 19284
+    - path: src/tune.py
+      hash: md5
+      md5: ddf83dbda3b3911f1a827b6ac126370a
+      size: 1373
