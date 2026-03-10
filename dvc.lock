@@ -9,8 +9,8 @@ stages:
       size: 23375
     - path: src/preprocess.py
       hash: md5
-      md5: 96c9d91f3ace810c64f6f3d16f0c3261
-      size: 413
+      md5: bed4216a2ea96d9e031406b41547b403
+      size: 635
     outs:
     - path: data/processed/test.csv
       hash: md5
@@ -29,18 +29,22 @@ stages:
       size: 19284
     - path: src/train.py
       hash: md5
-      md5: 9d7a4bb62ea70a906b619139e8288434
-      size: 1168
+      md5: b61a16591f738ffde2106fd35c464ec4
+      size: 1709
     params:
       params.yaml:
         models:
         - logistic
         - random_forest
     outs:
+    - path: metrics.json
+      hash: md5
+      md5: 9a0379eaa11dd7b9e9995a62a5f21656
+      size: 17
     - path: models/model.pkl
       hash: md5
-      md5: e1ea774f3cd47f8aa4c5f6f8776080f2
-      size: 1707065
+      md5: 3110b58cf7077273b10fc8adcf99c865
+      size: 1710265
   tune:
     cmd: python src/tune.py
     deps:
@@ -50,5 +54,5 @@ stages:
       size: 19284
     - path: src/tune.py
       hash: md5
-      md5: ddf83dbda3b3911f1a827b6ac126370a
-      size: 1373
+      md5: b414525b8ade2d8747fa6ad4e55e44a8
+      size: 1345
