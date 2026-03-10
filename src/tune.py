@@ -5,62 +5,63 @@ import dagshub
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, f1_score
 import itertools
+import joblib
 import os
 
-# 1. Initialize your specific DagsHub repo
 dagshub.init(repo_owner="RanimmmHisham", repo_name="DVC-DIABETES2-PROJECT", mlflow=True)
 
-def tune():
-    # 2. Load Diabetes data (Outcome instead of label)
-    train_df = pd.read_csv("data/processed/train.csv")
-    test_df  = pd.read_csv("data/processed/test.csv")
+os.makedirs("models", exist_ok=True)
 
-    X_train, y_train = train_df.drop("Outcome", axis=1), train_df["Outcome"]
-    X_test,  y_test  = test_df.drop("Outcome", axis=1),  test_df["Outcome"]
+# 2. Load data - using "Outcome" for the Diabetes dataset
+train_df = pd.read_csv("data/processed/train.csv")
+test_df  = pd.read_csv("data/processed/test.csv")
 
-    # 3. Hyperparameter grid
-    n_estimators_list = [50, 100, 150]
-    max_depth_list    = [5, 10, None]
+# Target column is 'Outcome' in the diabetes dataset
+X_train, y_train = train_df.drop("Outcome", axis=1), train_df["Outcome"]
+X_test,  y_test  = test_df.drop("Outcome", axis=1),  test_df["Outcome"]
 
-    # Parent Run
-    with mlflow.start_run(run_name="Tuning_Exp"):
-        best_accuracy = 0
+# 3. Hyperparameter grid
+n_estimators_list = [50, 100, 150]
+max_depth_list    = [None, 5, 10]
+
+# Parent run to group all trials
+with mlflow.start_run(run_name="RandomForest_Tuning_Grid"):
+
+    best_accuracy = 0
+    best_model = None
+
+    for n_est, depth in itertools.product(n_estimators_list, max_depth_list):
+        # Create a descriptive name for each trial row in DagsHub
+        trial_name = f"RF_n{n_est}_d{depth}"
         
-        # itertools.product creates combinations like (50, 5), (50, 10), etc.
-        for n_est, depth in itertools.product(n_estimators_list, max_depth_list):
+        with mlflow.start_run(run_name=trial_name, nested=True):
+            model = RandomForestClassifier(
+                n_estimators=n_est,
+                max_depth=depth,
+                random_state=42
+            )
+            model.fit(X_train, y_train)
+
+            preds    = model.predict(X_test)
+            accuracy = accuracy_score(y_test, preds)
+            f1       = f1_score(y_test, preds, average="weighted")
+
+            # Logging parameters and metrics for the clean table view
+            mlflow.log_param("n_estimators", n_est)
+            mlflow.log_param("max_depth", depth)
+            mlflow.log_metric("accuracy", accuracy)
+            mlflow.log_metric("f1_score", f1)
             
-            # DESCRIPTIVE RUN NAME: This is what makes the 'Name' column look good
-            run_name = f"RandomForest_n{n_est}_d{str(depth)}"
-            
-            with mlflow.start_run(run_name=run_name, nested=True):
-                model = RandomForestClassifier(
-                    n_estimators=n_est,
-                    max_depth=depth,
-                    random_state=42
-                )
-                model.fit(X_train, y_train)
+            # Log the individual model to MLflow artifacts
+            mlflow.sklearn.log_model(model, "model")
 
-                # Predict on test set for true performance
-                preds    = model.predict(X_test)
-                accuracy = accuracy_score(y_test, preds)
-                f1       = f1_score(y_test, preds, average="weighted")
+            print(f"{trial_name} -> Acc: {accuracy:.4f}")
 
-                # LOGGING - Creates the clean columns
-                mlflow.log_param("n_estimators", n_est)
-                mlflow.log_param("max_depth", depth)
-                mlflow.log_metric("accuracy", accuracy)
-                mlflow.log_metric("f1_score", f1)
-                
-                # Optional: log the model itself to MLflow
-                mlflow.sklearn.log_model(model, "model")
+            if accuracy > best_accuracy:
+                best_accuracy = accuracy
+                best_model = model
 
-                print(f"{run_name} → Acc: {accuracy:.4f} | F1: {f1:.4f}")
-
-                if accuracy > best_accuracy:
-                    best_accuracy = accuracy
-
-        mlflow.log_metric("best_overall_accuracy", best_accuracy)
-        print(f"\nTuning Complete. Best Accuracy: {best_accuracy:.4f}")
-
-if __name__ == "__main__":
-    tune()
+    # 4. Save the absolute best model physically for DVC tracking
+    if best_model:
+        joblib.dump(best_model, "models/best_rf_model.pkl")
+        print(f"\nSaved Best Model to models/best_rf_model.pkl with Accuracy: {best_accuracy:.4f}")
