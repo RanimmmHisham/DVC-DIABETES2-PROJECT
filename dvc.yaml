@@ -15,7 +15,7 @@ stages:
     params:
       - models
     outs:
-      - models/model.pkl
+      - models/        # Track the whole folder now
     metrics:
       - metrics.json:
           cache: false
