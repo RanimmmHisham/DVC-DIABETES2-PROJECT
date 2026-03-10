@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.env
+
+# DVC - ignore data and outputs, but NOT the .dvc folder itself
+data/
+models/
+metrics/
+plots/
+!.dvc/
+
+# VSCode
+.vscode/
