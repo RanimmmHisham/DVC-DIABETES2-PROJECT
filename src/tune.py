@@ -32,7 +32,7 @@ with mlflow.start_run(run_name="RandomForest_Tuning_Grid"):
 
     for n_est, depth in itertools.product(n_estimators_list, max_depth_list):
         # Create a descriptive name for each trial row in DagsHub
-        trial_name = f"RF_n{n_est}_d{depth}"
+        trial_name = f"RandomForest_n{n_est}_d{depth}"
         
         with mlflow.start_run(run_name=trial_name, nested=True):
             model = RandomForestClassifier(
@@ -63,5 +63,5 @@ with mlflow.start_run(run_name="RandomForest_Tuning_Grid"):
 
     # 4. Save the absolute best model physically for DVC tracking
     if best_model:
-        joblib.dump(best_model, "models/best_rf_model.pkl")
-        print(f"\nSaved Best Model to models/best_rf_model.pkl with Accuracy: {best_accuracy:.4f}")
+        joblib.dump(best_model, "models/best_randomf_model.pkl")
+        print(f"\nSaved Best Model to models/best_randomf_model.pkl with Accuracy: {best_accuracy:.4f}")
